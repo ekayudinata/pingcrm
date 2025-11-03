@@ -1,6 +1,7 @@
 <template>
   <div>
     <Head :title="`${form.first_name} ${form.last_name}`" />
+
     <div class="flex justify-start mb-8 max-w-3xl">
       <h1 class="text-3xl font-bold">
         <Link class="text-indigo-400 hover:text-indigo-600" href="/users">Users</Link>
@@ -29,11 +30,41 @@
         </div>
       </form>
     </div>
+
+    <!-- Passkeys Section -->
+    <div class="mt-8 max-w-3xl bg-white rounded-md shadow overflow-hidden p-8">
+      <h2 class="text-xl font-bold mb-4">Passkey Management</h2>
+
+      <div v-if="user.passkeys?.length > 0" class="mb-6">
+        <h3 class="font-semibold mb-2">Your passkeys:</h3>
+        <div class="divide-y border rounded-md">
+          <div v-for="passkey in user.passkeys" :key="passkey.id" class="flex justify-between items-center p-4 hover:bg-gray-50">
+            <div>
+              <p class="font-medium">Name: {{ passkey.name }}</p>
+              <p class="text-sm text-gray-500">Last used: {{ passkey.last_used_at || 'Never' }}</p>
+            </div>
+            <button
+              @click="deletePasskey(passkey.id)"
+              class="text-red-600 hover:text-red-800 text-sm font-medium"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <button
+        @click="addPassKey"
+        class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+      >
+        Add a new passkey
+      </button>
+    </div>
   </div>
 </template>
 
 <script>
-import { Head, Link } from '@inertiajs/vue3'
+import { Head, Link, router } from '@inertiajs/vue3'
 import Layout from '@/Shared/Layout.vue'
 import TextInput from '@/Shared/TextInput.vue'
 import FileInput from '@/Shared/FileInput.vue'
@@ -70,6 +101,57 @@ export default {
     }
   },
   methods: {
+    async addPassKey() {
+      try {
+        // Using direct URL for generating passkey options
+        const response = await fetch(`/profile/passkeys/generate-options`);
+        console.log(response);
+        if (!response.ok) throw new Error('Failed to generate passkey options');
+
+        const options = await response.json();
+        console.log(options)
+        const startAuthenticationResponse = await window.startRegistration(options);
+        console.log(startAuthenticationResponse)
+
+        // Using direct URL for storing passkey
+        await this.$inertia.post(
+          '/profile/passkeys',
+          {
+            options: JSON.stringify(options),
+            passkey: JSON.stringify(startAuthenticationResponse)
+          },
+          {
+            preserveScroll: true,
+            onSuccess: () => {
+              this.$inertia.reload();
+            },
+            onError: (errors) => {
+              console.error('Error storing passkey:', errors);
+            }
+          }
+        );
+      } catch (error) {
+        console.error('Error in passkey operation:', error);
+      }
+    },
+
+    async deletePasskey(id) {
+      if (confirm('Are you SURE you want to delete this passkey?')) {
+        await this.$inertia.delete(
+          `/profile/passkeys/${id}`,
+          {
+            preserveScroll: true,
+            onSuccess: () => {
+              this.$inertia.reload();
+            },
+            onError: (errors) => {
+              console.error('Error deleting passkey:', errors);
+            }
+          }
+        );
+      }
+    },
+
     update() {
       this.form.post(`/users/${this.user.id}`, {
         onSuccess: () => this.form.reset('password', 'photo'),

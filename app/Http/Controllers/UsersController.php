@@ -4,14 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Support\Facades\Log;
+// use App\Actions\GeneratePasskeyRegisterOptionsAction;
+use Spatie\LaravelPasskeys\Actions\GeneratePasskeyRegisterOptionsAction;
 
 class UsersController extends Controller
 {
@@ -121,5 +124,45 @@ class UsersController extends Controller
         $user->restore();
 
         return Redirect::back()->with('success', 'User restored.');
+    }
+
+    /**
+     * Generate passkey registration options
+     */
+    public function generatePasskeyOptions(GeneratePasskeyRegisterOptionsAction $action)
+    {
+        // add response before return log
+        // Log::info('Generate passkey registration options', ['user' => Auth::user()]);
+        $response = $action->execute(auth()->user());
+        Log::info('Generate passkey registration options response', ['response' => $response]);
+
+        return response()->json($response);
+    }
+
+    /**
+     * Store a newly created passkey
+     */
+    public function storePasskey(Request $request)
+    {
+        $validated = $request->validate([
+            'options' => 'required|string',
+            'passkey' => 'required|string',
+        ]);
+
+        // TODO: Implement passkey verification and storage
+        // This is a placeholder for the actual implementation
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Remove the specified passkey
+     */
+    public function destroyPasskey($id)
+    {
+        // TODO: Implement passkey deletion
+        // This is a placeholder for the actual implementation
+
+        return response()->json(['success' => true]);
     }
 }

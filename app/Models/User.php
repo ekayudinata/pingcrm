@@ -9,10 +9,13 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\LaravelPasskeys\Models\Concerns\HasPasskeys;
+use Spatie\LaravelPasskeys\Models\Concerns\InteractsWithPasskeys;
 
-class User extends Authenticatable
+class User extends Authenticatable implements HasPasskeys
 {
-    use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
+    // add use factory
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes,InteractsWithPasskeys, HasPasskeys;
 
     /**
      * The attributes that are mass assignable.
