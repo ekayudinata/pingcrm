@@ -103,33 +103,39 @@ export default {
   methods: {
     async addPassKey() {
       try {
+        // Import the startRegistration function dynamically
+        const { startRegistration } = await import('@simplewebauthn/browser');
+
         // Using direct URL for generating passkey options
         const response = await fetch(`/profile/passkeys/generate-options`);
-        console.log(response);
+        // console.log(response);
         if (!response.ok) throw new Error('Failed to generate passkey options');
 
         const options = await response.json();
-        console.log(options)
-        const startAuthenticationResponse = await window.startRegistration(options);
-        console.log(startAuthenticationResponse)
+        console.log(options);
+
+        // Use the imported startRegistration function
+        // const startAuthenticationResponse = await startRegistration(options);
+        const startAuthenticationResponse = await startRegistration({ optionsJSON: options });
+        console.log(startAuthenticationResponse);
 
         // Using direct URL for storing passkey
-        await this.$inertia.post(
-          '/profile/passkeys',
-          {
-            options: JSON.stringify(options),
-            passkey: JSON.stringify(startAuthenticationResponse)
-          },
-          {
-            preserveScroll: true,
-            onSuccess: () => {
-              this.$inertia.reload();
-            },
-            onError: (errors) => {
-              console.error('Error storing passkey:', errors);
-            }
-          }
-        );
+        // await this.$inertia.post(
+        //   '/profile/passkeys',
+        //   {
+        //     options: JSON.stringify(options),
+        //     passkey: JSON.stringify(startAuthenticationResponse)
+        //   },
+        //   {
+        //     preserveScroll: true,
+        //     onSuccess: () => {
+        //       this.$inertia.reload();
+        //     },
+        //     onError: (errors) => {
+        //       console.error('Error storing passkey:', errors);
+        //     }
+        //   }
+        // );
       } catch (error) {
         console.error('Error in passkey operation:', error);
       }

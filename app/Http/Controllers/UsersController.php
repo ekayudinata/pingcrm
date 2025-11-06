@@ -129,14 +129,10 @@ class UsersController extends Controller
     /**
      * Generate passkey registration options
      */
-    public function generatePasskeyOptions(GeneratePasskeyRegisterOptionsAction $action)
+    public function generatePasskeyOptions()
     {
-        // add response before return log
-        // Log::info('Generate passkey registration options', ['user' => Auth::user()]);
-        $response = $action->execute(auth()->user());
-        Log::info('Generate passkey registration options response', ['response' => $response]);
-
-        return response()->json($response);
+        $generatePassKeyOptionsAction = app(GeneratePasskeyRegisterOptionsAction::class);
+        return $generatePassKeyOptionsAction->execute(auth()->user());
     }
 
     /**
