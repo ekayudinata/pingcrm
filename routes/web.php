@@ -140,3 +140,18 @@ Route::get('reports', [ReportsController::class, 'index'])
 Route::get('/img/{path}', [ImagesController::class, 'show'])
     ->where('path', '.*')
     ->name('image');
+
+// Passkey Routes
+Route::middleware('auth')->group(function () {
+    // Generate passkey registration options
+    Route::get('/profile/passkeys/generate-options', [UsersController::class, 'generatePasskeyOptions'])
+        ->name('profile.passkeys.generate-options');
+        
+    // Store a new passkey
+    Route::post('/profile/passkeys', [UsersController::class, 'storePasskey'])
+        ->name('profile.passkeys.store');
+        
+    // Delete a passkey
+    Route::delete('/profile/passkeys/{passkey}', [UsersController::class, 'destroyPasskey'])
+        ->name('profile.passkeys.delete');
+});
